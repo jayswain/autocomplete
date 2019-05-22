@@ -10,6 +10,6 @@ fragments.each do |fragment|
   puts "Suggestions for #{fragment}"
   puts "-" * 50
 
-  results = tree.find_child(fragment).suggestions
+  results = tree.suggestions(fragment)
   results.each{ |node| puts "#{node.value} (#{node.frequency})" }
 end

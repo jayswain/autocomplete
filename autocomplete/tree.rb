@@ -8,8 +8,8 @@ module Autocomplete
       create_nodes!
     end
 
-    def method_missing(m, *args, &block)
-      @tree.send(m, *args, &block)
+    def suggestions(fragment)
+      @tree.find_child(fragment).suggestions
     end
 
     private
