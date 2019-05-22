@@ -1,12 +1,12 @@
-puts "parsing text"
-
 text = File.read(ARGV[0])
-
-puts "got text"
 
 class Node
   attr_reader :value
   attr_accessor :frequency, :children
+
+  def self.find_parent(node:,tree:)
+    tree.find_child(node.value[0, node.value.length - 1]) || tree
+  end
 
   def initialize(value: nil, frequency: nil)
     @value = value
@@ -16,7 +16,7 @@ class Node
 
   ##finds a nested node
   #eg from "foobar" to f => fo => foo => foob..
-  def find_node(value)
+  def find_child(value)
     node = nil
     nodes = children
     i = 0
@@ -46,15 +46,9 @@ class Node
   end
 end
 
-puts "parsing words"
-
 words = text.downcase.gsub(/[^a-zA-Z0-9\s]/i, '').split(" ")
 
-puts "building freq hash"
-
 word_frequency_hash = words.each_with_object(Hash.new(0)) { |word,counts| counts[word] += 1 }
-
-puts "building tree"
 
 tree = Node.new
 
@@ -63,21 +57,19 @@ words.uniq.each do |word|
 
   while i < word.length
     slice = word[0, i + 1]
-    exists = tree.find_node(slice)
+    slice_is_word = slice.length == word.length
+
+    exists = tree.find_child(slice)
 
     if exists
-      if slice == word && exists.frequency.nil?
+      if slice_is_word && exists.frequency.nil?
         exists.frequency = word_frequency_hash[word]
       end
     else
-      freq = slice == word ? word_frequency_hash[word] : nil
-      parent = tree.find_node(slice[0, slice.length - 1])
-      node = Node.new(value: slice, frequency: freq)
-      if parent
-        parent.children[slice] = node
-      else
-        tree.children[slice] = node
-      end
+      frequency = slice_is_word ? word_frequency_hash[word] : nil
+      node = Node.new(value: slice, frequency: frequency)
+      parent = Node.find_parent(node: node, tree: tree)
+      parent.children[slice] = node
     end
 
     i+= 1
@@ -90,7 +82,7 @@ fragments.each do |fragment|
   puts "-" * 50
   puts "Suggestions for #{fragment}"
   puts "-" * 50
-  results = tree.find_node(fragment).suggestions
+  results = tree.find_child(fragment).suggestions
   results.each{ |node| puts "#{node.value} (#{node.frequency})" }
 end
 
