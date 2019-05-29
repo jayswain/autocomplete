@@ -1,6 +1,7 @@
 require './autocomplete/tree'
 
-text = File.read(ARGV[0])
+text = ARGF.read
+
 tree = Autocomplete::Tree.new(text: text)
 
 fragments = %w(th fr pi sh wu ar il ne se pl)
