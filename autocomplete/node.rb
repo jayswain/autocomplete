@@ -8,13 +8,18 @@ module Autocomplete
       @children = {}
     end
 
-    def suggestions(nodes=children, results=[])
-      nodes.each do |key, node|
-        results.push(node) if node.frequency
-        suggestions(node.children, results)
-      end
+    def suggestions(fragment: nil, nodes: children, results: [])
+      if fragment
+        nested_keys = fragment.split("")
+        dig(*nested_keys).suggestions
+      else
+        nodes.each do |_, node|
+          results.push(node) if node.frequency
+          suggestions(nodes: node.children, results: results)
+        end
 
-      results.sort{ |a,b| b.frequency <=> a.frequency }[0, 25]
+        results.sort{ |a,b| b.frequency <=> a.frequency }[0, 25]
+      end
     end
 
     def dig(*args)
